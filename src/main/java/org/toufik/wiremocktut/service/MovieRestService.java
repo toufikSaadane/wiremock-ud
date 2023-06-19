@@ -5,8 +5,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.toufik.wiremocktut.constants.MovieAppConstants;
 import org.toufik.wiremocktut.dto.Movie;
+import org.toufik.wiremocktut.exceptions.MovieNotFoundException;
 
 import java.util.List;
+
 
 @Slf4j
 public class MovieRestService {
@@ -27,6 +29,7 @@ public class MovieRestService {
     }
 
     public Movie retrieveMovieById(Integer id) {
+        log.info("start");
         try {
             return webClient.get()
                     .uri(MovieAppConstants.GET_ALL_MOVIES_V1_BY_ID, id)
@@ -34,8 +37,11 @@ public class MovieRestService {
                     .bodyToMono(Movie.class)
                     .block();
         }catch (WebClientResponseException responseException){
-            log.error("error {}", responseException.getResponseBodyAsString());
-            throw responseException;
+            log.error("movie with id : {} not found", id);
+            throw new MovieNotFoundException(responseException.getStatusText(), responseException);
+        }catch (Exception exception){
+            log.error("movie with id : {} not found", id);
+            throw exception;
         }
     }
 }
